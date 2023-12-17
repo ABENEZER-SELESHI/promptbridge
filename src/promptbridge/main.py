@@ -8,7 +8,13 @@ from promptbridge.logger import setup_logging
 app = FastAPI(title="PromptBridge", version=__version__)
 config = load_config()
 setup_logging(config.debug)
+from promptbridge.endpoints.chat import router as chat_router
+from promptbridge.services.factory import ProviderFactory
+
+app.state.config = config
+app.state.provider_factory = ProviderFactory(config)
 app.include_router(system_router)
+app.include_router(chat_router)
 
 
 @app.get("/")
