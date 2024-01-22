@@ -1,0 +1,23 @@
+[server]
+host = 0.0.0.0
+port = 8080
+debug = false
+
+[auth]
+api_key = change-me-in-production
+require_auth = true
+
+[providers]
+default = mock
+enabled = mock, echo
+
+[provider.mock]
+model = mock-gpt-4
+max_tokens = 4096
+
+[provider.echo]
+prefix = echo:
+
+[storage]
+database_path = ./data/conversations.sqlite3
+persist_conversations = true
