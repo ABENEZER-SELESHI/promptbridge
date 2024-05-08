@@ -81,6 +81,41 @@ class ConversationStore:
             )
             await db.commit()
 
+    async def list_conversations(self, limit: int = 50, offset: int = 0) -> list[dict]:
+        if not self._enabled:
+            return []
+        async with aiosqlite.connect(self._path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                """
+                SELECT c.*, COUNT(m.id) AS message_count
+                FROM conversations c
+                LEFT JOIN messages m ON m.conversation_id = c.id
+                GROUP BY c.id
+                ORDER BY c.updated_at DESC
+                LIMIT ? OFFSET ?
+                """,
+                (limit, offset),
+            )
+            rows = await cursor.fetchall()
+            return [dict(row) for row in rows]
+
+    async def delete_conversation(self, conversation_id: str) -> bool:
+        if not self._enabled:
+            return False
+        async with aiosqlite.connect(self._path) as db:
+            cursor = await db.execute(
+                "SELECT id FROM conversations WHERE id = ?",
+                (conversation_id,),
+            )
+            row = await cursor.fetchone()
+            if row is None:
+                return False
+            await db.execute("DELETE FROM messages WHERE conversation_id = ?", (conversation_id,))
+            await db.execute("DELETE FROM conversations WHERE id = ?", (conversation_id,))
+            await db.commit()
+            return True
+
     async def get_conversation(self, conversation_id: str) -> dict | None:
         if not self._enabled:
             return None
