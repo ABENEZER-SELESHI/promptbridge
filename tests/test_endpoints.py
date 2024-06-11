@@ -53,6 +53,16 @@ async def test_echo_provider(client, auth_headers):
 
 
 @pytest.mark.asyncio
+async def test_chat_completion_rejects_over_budget(client, auth_headers):
+    payload = {
+        "model": "mock-gpt-4",
+        "messages": [{"role": "user", "content": "x" * 50000}],
+    }
+    response = await client.post("/v1/chat/completions", json=payload, headers=auth_headers)
+    assert response.status_code == 413
+
+
+@pytest.mark.asyncio
 async def test_list_models(client, auth_headers):
     response = await client.get("/v1/models", headers=auth_headers)
     assert response.status_code == 200

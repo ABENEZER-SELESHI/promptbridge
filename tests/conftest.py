@@ -17,6 +17,10 @@ def test_config(tmp_path: Path) -> AppConfig:
         require_auth=True,
         database_path=db_path,
         persist_conversations=True,
+        rate_limit_enabled=False,
+        enforce_token_budget=True,
+        token_budget=8192,
+        enabled_providers=["mock", "echo", "template"],
     )
 
 
