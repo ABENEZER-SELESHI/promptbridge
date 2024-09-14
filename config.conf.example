@@ -9,7 +9,7 @@ require_auth = true
 
 [providers]
 default = mock
-enabled = mock, echo
+enabled = mock, echo, template
 
 [provider.mock]
 model = mock-gpt-4
@@ -18,6 +18,27 @@ max_tokens = 4096
 [provider.echo]
 prefix = echo:
 
+[provider.template]
+inner_provider = mock
+system_template = You are a helpful assistant. Context: $context
+
 [storage]
 database_path = ./data/conversations.sqlite3
 persist_conversations = true
+
+[limits]
+token_budget = 8192
+enforce_token_budget = true
+
+[rate_limit]
+enabled = true
+max_requests = 60
+window_seconds = 60
+
+[routing]
+rules = mock-.*|mock|10; echo-.*|echo|5; template-.*|template|8
+
+[resilience]
+failure_threshold = 3
+recovery_seconds = 30
+retry_max_attempts = 3
